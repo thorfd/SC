@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilitar el modo oscuro basado en clase
+        }
         // Script para aplicar el tema guardado al instante y evitar parpadeos
         if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.remove('dark');
         } else {
             document.documentElement.classList.add('dark');
-        }
-        tailwind.config = {
-            darkMode: 'class', // Habilitar el modo oscuro basado en clase
         }
     </script>
     <style>
@@ -51,19 +51,6 @@
         .table-container::-webkit-scrollbar-thumb:hover {
             @apply bg-gray-500 dark:bg-gray-500;
         }
-        /* Styling for AI analysis output */
-        .prose h3 {
-            @apply text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-white;
-        }
-        .prose p {
-            @apply mb-4 text-gray-600 dark:text-gray-300;
-        }
-        .prose ul {
-            @apply list-disc pl-6 mb-4 text-gray-600 dark:text-gray-300;
-        }
-        .prose li {
-            @apply mb-2;
-        }
         .loader {
             border: 4px solid #f3f3f330;
             border-top: 4px solid #3498db;
@@ -94,12 +81,12 @@
         <header class="flex flex-col md:flex-row justify-between md:items-center mb-8">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Dashboard de Ingresos de Educación Continua 25-26</h1>
-                <p class="text-lg text-gray-500 dark:text-gray-400">Análisis de Resultados Reales vs. Plan con Asistente de IA</p>
+                <p class="text-lg text-gray-500 dark:text-gray-400">Resultados Reales vs. Plan</p>
             </div>
              <div class="flex items-center space-x-4 mt-4 md:mt-0">
                 <p id="last-updated" class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"></p>
                 <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                    <svg id="theme-icon-light" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="theme-icon-light" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     <svg id="theme-icon-dark" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 </button>
             </div>
@@ -148,20 +135,6 @@
                 </div>
             </div>
 
-            <!-- Gemini AI Analysis Section -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-8">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Análisis y Recomendaciones con IA</h3>
-                    <button id="generate-analysis-btn" class="mt-4 md:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span id="btn-text">✨ Generar Análisis</span>
-                        <div id="btn-loader" class="loader hidden"></div>
-                    </button>
-                </div>
-                <div id="ai-analysis-result" class="prose max-w-none">
-                    <p class="text-gray-500 dark:text-gray-400">Haz clic en el botón para obtener un resumen ejecutivo y recomendaciones basadas en los datos actuales.</p>
-                </div>
-            </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Data Table and Donut Chart -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg lg:col-span-2">
@@ -204,15 +177,16 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 const themeIconLight = document.getElementById('theme-icon-light');
 const themeIconDark = document.getElementById('theme-icon-dark');
 
+// Aplica el tema y actualiza el icono para mostrar el opuesto (la acción que ocurrirá al hacer clic)
 const applyTheme = (theme) => {
     if (theme === 'dark') {
         document.documentElement.classList.add('dark');
-        themeIconLight.classList.add('hidden');
-        themeIconDark.classList.remove('hidden');
+        themeIconLight.classList.remove('hidden'); // En modo oscuro, muestra el sol (para cambiar a claro)
+        themeIconDark.classList.add('hidden');
     } else {
         document.documentElement.classList.remove('dark');
-        themeIconLight.classList.remove('hidden');
-        themeIconDark.classList.add('hidden');
+        themeIconLight.classList.add('hidden');
+        themeIconDark.classList.remove('hidden'); // En modo claro, muestra la luna (para cambiar a oscuro)
     }
 };
 
@@ -228,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     applyTheme(savedTheme);
     loadDataAndInitializeDashboard();
-    document.getElementById('generate-analysis-btn').addEventListener('click', generateAIAnalysis);
 });
 
 
@@ -244,7 +217,6 @@ async function loadDataAndInitializeDashboard() {
             throw new Error(`No se pudo encontrar el archivo ${dataFile}. Código de error: ${response.status}`);
         }
         
-        // **NUEVO: Obtener y mostrar fecha de actualización**
         const lastModified = response.headers.get('Last-Modified');
         if (lastModified) {
             const date = new Date(lastModified);
@@ -253,10 +225,10 @@ async function loadDataAndInitializeDashboard() {
         }
 
         const csvData = await response.text();
-        monthlyDataGlobal = parseData(csvData); // Parse data once
+        monthlyDataGlobal = parseData(csvData);
         
-        updateDashboardUI(); // Update KPIs and table
-        renderCharts(); // Initial chart render
+        updateDashboardUI();
+        renderCharts();
         
         loadingSection.classList.add('hidden');
         dashboardContent.classList.remove('hidden');
@@ -264,59 +236,6 @@ async function loadDataAndInitializeDashboard() {
     } catch (error) {
         console.error("Error al cargar los datos:", error);
         loadingSection.innerHTML = `<p class="text-red-500 text-lg">Error: No se pudo cargar el archivo '${dataFile}'. Asegúrate de que exista en el repositorio.</p>`;
-    }
-}
-
-// --- Gemini API Call ---
-async function generateAIAnalysis() {
-    const btn = document.getElementById('generate-analysis-btn');
-    const btnText = document.getElementById('btn-text');
-    const btnLoader = document.getElementById('btn-loader');
-    const resultContainer = document.getElementById('ai-analysis-result');
-
-    btn.disabled = true;
-    btnText.classList.add('hidden');
-    btnLoader.classList.remove('hidden');
-    resultContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Generando análisis... Esto puede tardar unos segundos.</p>';
-
-    const dataSummary = monthlyDataGlobal.map(d =>
-        ` - Mes: ${d.month}, Real: ${currencyFormatter.format(d.real)}, Plan: ${currencyFormatter.format(d.plan)}, Cumplimiento: ${(d.plan > 0 ? (d.real / d.plan) * 100 : 0).toFixed(1)}%`
-    ).join('\n');
-
-    const systemPrompt = "Actúas como un analista financiero experto y proactivo para el departamento de Educación Continua de una universidad. Tu tono es profesional, objetivo pero alentador. Tu objetivo es proporcionar información clara y útil para la toma de decisiones. Responde siempre en español y formatea tu respuesta usando Markdown (títulos con '###', listas con '*').";
-
-    const userQuery = `
-    Basado en los siguientes datos de rendimiento financiero, por favor genera un análisis.
-    **Resumen de Indicadores Clave (KPIs):**
-    - Ingreso Real Total: ${currencyFormatter.format(kpiSummaryGlobal.totalReal)}
-    - Ingreso Plan Total: ${currencyFormatter.format(kpiSummaryGlobal.totalPlan)}
-    - Cumplimiento General: ${kpiSummaryGlobal.totalCompliance.toFixed(2)}%
-    **Desglose Mensual:**
-    ${dataSummary}
-    **Tu tarea es la siguiente:**
-    1.  **Resumen Ejecutivo:** Escribe un párrafo conciso (3-4 frases) que resuma el rendimiento general.
-    2.  **Puntos Destacados:** Identifica el mes con el **mejor rendimiento** y el mes con el **mayor área de oportunidad**. Explica brevemente por qué.
-    3.  **Recomendaciones Accionables:** Proporciona 2 o 3 recomendaciones específicas y prácticas para mejorar los resultados.
-    Por favor, estructura tu respuesta con los títulos: "### Resumen Ejecutivo", "### Puntos Destacados", y "### Recomendaciones Accionables".`;
-    
-    const apiKey = "";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
-
-    try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        const result = await response.json();
-        const candidate = result.candidates?.[0];
-        let text = candidate?.content?.parts?.[0]?.text || "No se pudo generar el análisis.";
-        resultContainer.innerHTML = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\* (.*)/g, '<li>$1</li>').replace(/<\/li><li>/g, '</li><li>').replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>').replace(/\n/g, '<br>');
-    } catch (error) {
-        console.error("Gemini API call failed:", error);
-        resultContainer.innerHTML = `<p class="text-red-500">Error: No se pudo conectar con el servicio de IA.</p>`;
-    } finally {
-        btn.disabled = false;
-        btnText.classList.remove('hidden');
-        btnLoader.classList.add('hidden');
     }
 }
 
