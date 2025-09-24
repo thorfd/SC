@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark"> <!-- Se establece el modo oscuro por defecto -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Script para aplicar el tema guardado al instante y evitar parpadeos
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+        tailwind.config = {
+            darkMode: 'class', // Habilitar el modo oscuro basado en clase
+        }
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            @apply bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300;
         }
         .chart-container {
             position: relative;
@@ -31,36 +43,30 @@
             height: 8px;
         }
         .table-container::-webkit-scrollbar-track {
-            background: #2d3748; /* gray-800 */
+            @apply bg-gray-200 dark:bg-gray-800;
         }
         .table-container::-webkit-scrollbar-thumb {
-            background: #4a5568; /* gray-600 */
-            border-radius: 4px;
+            @apply bg-gray-400 dark:bg-gray-600 rounded-md;
         }
         .table-container::-webkit-scrollbar-thumb:hover {
-            background: #718096; /* gray-500 */
+            @apply bg-gray-500 dark:bg-gray-500;
         }
         /* Styling for AI analysis output */
         .prose h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
+            @apply text-xl font-semibold mt-6 mb-2 text-gray-900 dark:text-white;
         }
         .prose p {
-            margin-bottom: 1rem;
+            @apply mb-4 text-gray-600 dark:text-gray-300;
         }
         .prose ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            margin-bottom: 1rem;
+            @apply list-disc pl-6 mb-4 text-gray-600 dark:text-gray-300;
         }
         .prose li {
-            margin-bottom: 0.5rem;
+            @apply mb-2;
         }
         .loader {
-            border: 4px solid #f3f3f330; /* Light grey */
-            border-top: 4px solid #3498db; /* Blue */
+            border: 4px solid #f3f3f330;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -81,51 +87,60 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200">
+<body>
 
     <div class="container mx-auto p-4 md:p-8">
         
-        <header class="mb-8">
+        <header class="flex flex-col md:flex-row justify-between md:items-center mb-8">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-white">Dashboard de Ingresos de Educación Continua 25-26</h1>
-                <p class="text-lg text-gray-400">Análisis de Resultados Reales vs. Plan con Asistente de IA</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Dashboard de Ingresos de Educación Continua 25-26</h1>
+                <p class="text-lg text-gray-500 dark:text-gray-400">Análisis de Resultados Reales vs. Plan con Asistente de IA</p>
+            </div>
+             <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                <p id="last-updated" class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"></p>
+                <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                    <svg id="theme-icon-light" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="theme-icon-dark" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                </button>
             </div>
         </header>
 
         <!-- Seccion de Carga - se mostrará mientras se obtienen los datos -->
         <div id="loading-section" class="page-loader">
             <div class="loader" style="width: 50px; height: 50px;"></div>
-            <p class="text-gray-400 text-lg">Cargando datos del repositorio...</p>
+            <p class="text-gray-500 dark:text-gray-400 text-lg">Cargando datos del repositorio...</p>
         </div>
 
         <div id="dashboard-content" class="hidden">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                    <h2 class="text-gray-400 font-semibold">Ingreso Real Total</h2>
-                    <p id="kpi-real" class="kpi-value font-bold text-teal-400">Cargando...</p>
+                <!-- KPI Cards -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                    <h2 class="text-gray-500 dark:text-gray-400 font-semibold">Ingreso Real Total</h2>
+                    <p id="kpi-real" class="kpi-value font-bold text-teal-600 dark:text-teal-400">Cargando...</p>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                    <h2 class="text-gray-400 font-semibold">Ingreso Plan Total</h2>
-                    <p id="kpi-plan" class="kpi-value font-bold text-sky-400">Cargando...</p>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                    <h2 class="text-gray-500 dark:text-gray-400 font-semibold">Ingreso Plan Total</h2>
+                    <p id="kpi-plan" class="kpi-value font-bold text-sky-600 dark:text-sky-400">Cargando...</p>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                    <h2 class="text-gray-400 font-semibold">Cumplimiento del Plan</h2>
-                    <p id="kpi-compliance" class="kpi-value font-bold text-green-400">Cargando...</p>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                    <h2 class="text-gray-500 dark:text-gray-400 font-semibold">Cumplimiento del Plan</h2>
+                    <p id="kpi-compliance" class="kpi-value font-bold text-green-600 dark:text-green-400">Cargando...</p>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-                    <h2 class="text-gray-400 font-semibold">Diferencia vs. Plan</h2>
-                    <p id="kpi-difference" class="kpi-value font-bold text-gray-200">Cargando...</p>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                    <h2 class="text-gray-500 dark:text-gray-400 font-semibold">Diferencia vs. Plan</h2>
+                    <p id="kpi-difference" class="kpi-value font-bold text-gray-800 dark:text-gray-200">Cargando...</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4 text-white">Comparativa Mensual: Real vs. Plan</h3>
+                 <!-- Chart Containers -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Comparativa Mensual: Real vs. Plan</h3>
                     <div class="chart-container">
                         <canvas id="monthlyChart"></canvas>
                     </div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-semibold mb-4 text-white">Desempeño Acumulado: Real vs. Plan</h3>
                     <div class="chart-container">
                         <canvas id="cumulativeChart"></canvas>
@@ -134,25 +149,26 @@
             </div>
 
             <!-- Gemini AI Analysis Section -->
-            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg mb-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                    <h3 class="text-xl font-semibold text-white">Análisis y Recomendaciones con IA</h3>
-                    <button id="generate-analysis-btn" class="mt-4 md:mt-0 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Análisis y Recomendaciones con IA</h3>
+                    <button id="generate-analysis-btn" class="mt-4 md:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span id="btn-text">✨ Generar Análisis</span>
                         <div id="btn-loader" class="loader hidden"></div>
                     </button>
                 </div>
-                <div id="ai-analysis-result" class="text-gray-300 prose max-w-none">
-                    <p class="text-gray-500">Haz clic en el botón para obtener un resumen ejecutivo y recomendaciones basadas en los datos actuales.</p>
+                <div id="ai-analysis-result" class="prose max-w-none">
+                    <p class="text-gray-500 dark:text-gray-400">Haz clic en el botón para obtener un resumen ejecutivo y recomendaciones basadas en los datos actuales.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg lg:col-span-2">
-                    <h3 class="text-xl font-semibold mb-4 text-white">Detalle de Ingresos Mensuales</h3>
+                <!-- Data Table and Donut Chart -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Detalle de Ingresos Mensuales</h3>
                     <div class="overflow-x-auto table-container">
                         <table class="w-full text-left whitespace-nowrap">
-                            <thead class="bg-gray-700 text-gray-300 uppercase text-sm">
+                            <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-sm">
                                 <tr>
                                     <th class="p-3 rounded-l-lg">Mes</th>
                                     <th class="p-3 text-right">Ingreso Real</th>
@@ -166,8 +182,8 @@
                         </table>
                     </div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
-                     <h3 class="text-xl font-semibold mb-4 text-white">Proporción de Cumplimiento</h3>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+                     <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Proporción de Cumplimiento</h3>
                      <div class="chart-container" style="height:30vh">
                         <canvas id="complianceDonutChart"></canvas>
                      </div>
@@ -183,36 +199,71 @@ let monthlyDataGlobal = [];
 let kpiSummaryGlobal = {};
 const currencyFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Se elimina la lógica de carga de archivos y se reemplaza con una carga automática
-    loadDataAndInitializeDashboard();
-    
-    const generateBtn = document.getElementById('generate-analysis-btn');
-    generateBtn.addEventListener('click', generateAIAnalysis);
+// --- Theme Management ---
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeIconLight = document.getElementById('theme-icon-light');
+const themeIconDark = document.getElementById('theme-icon-dark');
+
+const applyTheme = (theme) => {
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        themeIconLight.classList.add('hidden');
+        themeIconDark.classList.remove('hidden');
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeIconLight.classList.remove('hidden');
+        themeIconDark.classList.add('hidden');
+    }
+};
+
+themeToggleBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme);
+    renderCharts(); // Re-render charts with new theme colors
 });
 
-// --- NUEVA FUNCIÓN para cargar datos desde el repositorio ---
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+    loadDataAndInitializeDashboard();
+    document.getElementById('generate-analysis-btn').addEventListener('click', generateAIAnalysis);
+});
+
+
+// --- Data Loading and Initializing ---
 async function loadDataAndInitializeDashboard() {
     const loadingSection = document.getElementById('loading-section');
     const dashboardContent = document.getElementById('dashboard-content');
-    // ** CAMBIO: Se actualiza el nombre del archivo según tu solicitud **
-    const dataFile = 'Ingresos_SC.csv'; 
+    const dataFile = './Ingresos_SC.csv'; 
 
     try {
         const response = await fetch(dataFile);
         if (!response.ok) {
             throw new Error(`No se pudo encontrar el archivo ${dataFile}. Código de error: ${response.status}`);
         }
-        const csvData = await response.text();
-        updateDashboard(csvData);
         
-        // Ocultar la carga y mostrar el dashboard
+        // **NUEVO: Obtener y mostrar fecha de actualización**
+        const lastModified = response.headers.get('Last-Modified');
+        if (lastModified) {
+            const date = new Date(lastModified);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('last-updated').textContent = `Actualizado: ${date.toLocaleDateString('es-MX', options)}`;
+        }
+
+        const csvData = await response.text();
+        monthlyDataGlobal = parseData(csvData); // Parse data once
+        
+        updateDashboardUI(); // Update KPIs and table
+        renderCharts(); // Initial chart render
+        
         loadingSection.classList.add('hidden');
         dashboardContent.classList.remove('hidden');
 
     } catch (error) {
         console.error("Error al cargar los datos:", error);
-        loadingSection.innerHTML = `<p class="text-red-400 text-lg">Error: No se pudo cargar el archivo '${dataFile}'. Asegúrate de que el archivo exista en el repositorio de GitHub y que el nombre sea correcto.</p>`;
+        loadingSection.innerHTML = `<p class="text-red-500 text-lg">Error: No se pudo cargar el archivo '${dataFile}'. Asegúrate de que exista en el repositorio.</p>`;
     }
 }
 
@@ -226,7 +277,7 @@ async function generateAIAnalysis() {
     btn.disabled = true;
     btnText.classList.add('hidden');
     btnLoader.classList.remove('hidden');
-    resultContainer.innerHTML = '<p class="text-gray-400">Generando análisis... Esto puede tardar unos segundos.</p>';
+    resultContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Generando análisis... Esto puede tardar unos segundos.</p>';
 
     const dataSummary = monthlyDataGlobal.map(d =>
         ` - Mes: ${d.month}, Real: ${currencyFormatter.format(d.real)}, Plan: ${currencyFormatter.format(d.plan)}, Cumplimiento: ${(d.plan > 0 ? (d.real / d.plan) * 100 : 0).toFixed(1)}%`
@@ -236,57 +287,32 @@ async function generateAIAnalysis() {
 
     const userQuery = `
     Basado en los siguientes datos de rendimiento financiero, por favor genera un análisis.
-
     **Resumen de Indicadores Clave (KPIs):**
     - Ingreso Real Total: ${currencyFormatter.format(kpiSummaryGlobal.totalReal)}
     - Ingreso Plan Total: ${currencyFormatter.format(kpiSummaryGlobal.totalPlan)}
     - Cumplimiento General: ${kpiSummaryGlobal.totalCompliance.toFixed(2)}%
-
     **Desglose Mensual:**
     ${dataSummary}
-
     **Tu tarea es la siguiente:**
     1.  **Resumen Ejecutivo:** Escribe un párrafo conciso (3-4 frases) que resuma el rendimiento general.
     2.  **Puntos Destacados:** Identifica el mes con el **mejor rendimiento** y el mes con el **mayor área de oportunidad**. Explica brevemente por qué.
     3.  **Recomendaciones Accionables:** Proporciona 2 o 3 recomendaciones específicas y prácticas para mejorar los resultados.
-
-    Por favor, estructura tu respuesta con los títulos: "### Resumen Ejecutivo", "### Puntos Destacados", y "### Recomendaciones Accionables".
-    `;
+    Por favor, estructura tu respuesta con los títulos: "### Resumen Ejecutivo", "### Puntos Destacados", y "### Recomendaciones Accionables".`;
     
-    const apiKey = ""; // API key is handled by the environment.
+    const apiKey = "";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    const payload = {
-        contents: [{ parts: [{ text: userQuery }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-    };
+    const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
 
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
-        }
-
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
         const result = await response.json();
-        const candidate = result.candidates?.[_0];
-        let text = candidate?.content?.parts?.[_0]?.text || "No se pudo generar el análisis. Inténtalo de nuevo.";
-
-        // Basic Markdown to HTML conversion
-        text = text.replace(/### (.*)/g, '<h3>$1</h3>');
-        text = text.replace(/\* (.*)/g, '<li>$1</li>');
-        text = text.replace(/<\/li><li>/g, '</li><li>'); // Fix lists
-        text = text.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
-        text = text.replace(/\n/g, '<br>');
-        
-        resultContainer.innerHTML = text;
-
+        const candidate = result.candidates?.[0];
+        let text = candidate?.content?.parts?.[0]?.text || "No se pudo generar el análisis.";
+        resultContainer.innerHTML = text.replace(/### (.*)/g, '<h3>$1</h3>').replace(/\* (.*)/g, '<li>$1</li>').replace(/<\/li><li>/g, '</li><li>').replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>').replace(/\n/g, '<br>');
     } catch (error) {
         console.error("Gemini API call failed:", error);
-        resultContainer.innerHTML = `<p class="text-red-400">Error: No se pudo conectar con el servicio de IA. Revisa la consola para más detalles.</p>`;
+        resultContainer.innerHTML = `<p class="text-red-500">Error: No se pudo conectar con el servicio de IA.</p>`;
     } finally {
         btn.disabled = false;
         btnText.classList.remove('hidden');
@@ -294,54 +320,42 @@ async function generateAIAnalysis() {
     }
 }
 
-
-function updateDashboard(csv) {
-    if (monthlyChartInstance) monthlyChartInstance.destroy();
-    if (cumulativeChartInstance) cumulativeChartInstance.destroy();
-    if (donutChartInstance) donutChartInstance.destroy();
-
-    function parseData(csv) {
-        const lines = csv.trim().split('\n');
-        function parseCsvLine(line) {
-            const result = []; let buffer = ''; let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') { inQuotes = !inQuotes; continue; }
-                if (char === ',' && !inQuotes) { result.push(buffer); buffer = ''; } else { buffer += char; }
-            }
-            result.push(buffer); return result;
+// --- Data Parsing and UI Updates ---
+function parseData(csv) {
+    const lines = csv.trim().split('\n');
+    function parseCsvLine(line) {
+        const result = []; let buffer = ''; let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') { inQuotes = !inQuotes; continue; }
+            if (char === ',' && !inQuotes) { result.push(buffer); buffer = ''; } else { buffer += char; }
         }
-        const dataLine = parseCsvLine(lines.filter(l => l.trim() !== '')[1]);
-        const data = [];
-        const months = ["Ago 25", "Sep 25", "Oct 25", "Nov 25", "Dic 25", "Ene 26", "Feb 26", "Mar 26", "Abr 26", "May 26", "Jun 26", "Jul 26"];
-        const cleanValue = (str) => {
-            if (!str || !str.trim()) return 0;
-            const cleaned = str.trim().replace(/"/g, '').replace(/\$/g, '').replace(/,/g, '').trim();
-            const value = parseFloat(cleaned);
-            return isNaN(value) ? 0 : value;
-        };
-        let dataIndex = 2;
-        for (const month of months) {
-            data.push({ month, real: cleanValue(dataLine[dataIndex]), plan: cleanValue(dataLine[dataIndex + 1]) });
-            dataIndex += 2; if (month === "Dic 25") dataIndex += 2;
-        }
-        return data;
+        result.push(buffer); return result;
     }
+    const dataLine = parseCsvLine(lines.filter(l => l.trim() !== '')[1]);
+    const data = [];
+    const months = ["Ago 25", "Sep 25", "Oct 25", "Nov 25", "Dic 25", "Ene 26", "Feb 26", "Mar 26", "Abr 26", "May 26", "Jun 26", "Jul 26"];
+    const cleanValue = (str) => {
+        if (!str || !str.trim()) return 0;
+        const cleaned = str.trim().replace(/"/g, '').replace(/\$/g, '').replace(/,/g, '').trim();
+        const value = parseFloat(cleaned);
+        return isNaN(value) ? 0 : value;
+    };
+    let dataIndex = 2;
+    for (const month of months) {
+        data.push({ month, real: cleanValue(dataLine[dataIndex]), plan: cleanValue(dataLine[dataIndex + 1]) });
+        dataIndex += 2; if (month === "Dic 25") dataIndex += 2;
+    }
+    return data;
+}
 
-    monthlyDataGlobal = parseData(csv);
+function updateDashboardUI() {
     const totalReal = monthlyDataGlobal.reduce((sum, item) => sum + item.real, 0);
     const totalPlan = monthlyDataGlobal.reduce((sum, item) => sum + item.plan, 0);
     const totalDifference = totalReal - totalPlan;
     const totalCompliance = totalPlan > 0 ? (totalReal / totalPlan) * 100 : 0;
     
-    kpiSummaryGlobal = { totalReal, totalPlan, totalCompliance }; // Store for AI
-    
-    const labels = monthlyDataGlobal.map(d => d.month);
-    const realData = monthlyDataGlobal.map(d => d.real);
-    const planData = monthlyDataGlobal.map(d => d.plan);
-
-    const cumulativeReal = realData.reduce((acc, val, i) => { acc.push((acc[i-1] || 0) + val); return acc; }, []);
-    const cumulativePlan = planData.reduce((acc, val, i) => { acc.push((acc[i-1] || 0) + val); return acc; }, []);
+    kpiSummaryGlobal = { totalReal, totalPlan, totalCompliance };
     
     const formatCurrency = (value) => currencyFormatter.format(value);
 
@@ -350,8 +364,10 @@ function updateDashboard(csv) {
     document.getElementById('kpi-compliance').textContent = `${totalCompliance.toFixed(2)}%`;
     const differenceEl = document.getElementById('kpi-difference');
     differenceEl.textContent = formatCurrency(totalDifference);
-    differenceEl.classList.toggle('text-red-400', totalDifference < 0);
-    differenceEl.classList.toggle('text-green-400', totalDifference >= 0);
+    differenceEl.classList.toggle('text-red-500', totalDifference < 0);
+    differenceEl.classList.toggle('dark:text-red-400', totalDifference < 0);
+    differenceEl.classList.toggle('text-green-600', totalDifference >= 0);
+    differenceEl.classList.toggle('dark:text-green-400', totalDifference >= 0);
 
     const tableBody = document.getElementById('data-table');
     tableBody.innerHTML = '';
@@ -359,36 +375,59 @@ function updateDashboard(csv) {
         const difference = item.real - item.plan;
         const compliance = item.plan > 0 ? (item.real / item.plan) * 100 : 0;
         const row = `
-            <tr class="border-b border-gray-700 hover:bg-gray-700/50">
+            <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="p-3 font-medium">${item.month}</td>
                 <td class="p-3 text-right">${formatCurrency(item.real)}</td>
                 <td class="p-3 text-right">${formatCurrency(item.plan)}</td>
-                <td class="p-3 text-right ${difference < 0 ? 'text-red-400' : 'text-green-400'}">${formatCurrency(difference)}</td>
-                <td class="p-3 text-right ${compliance < 100 ? 'text-red-400' : 'text-green-400'}">${compliance.toFixed(2)}%</td>
+                <td class="p-3 text-right ${difference < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${formatCurrency(difference)}</td>
+                <td class="p-3 text-right ${compliance < 100 ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${compliance.toFixed(2)}%</td>
             </tr>`;
         tableBody.innerHTML += row;
     });
+}
 
-    Chart.defaults.color = '#a0aec0';
-    Chart.defaults.borderColor = '#4a5568';
-    const tooltipConfig = {
-        backgroundColor: 'rgba(31, 41, 55, 0.9)', titleColor: '#ffffff', bodyColor: '#d1d5db',
-        titleFont: { weight: 'bold' }, padding: 12, cornerRadius: 8, displayColors: true, boxPadding: 4,
-        callbacks: { label: (c) => `${c.dataset.label || ''}: ${formatCurrency(c.parsed.y)}` }
-    };
+// --- Chart Rendering ---
+function renderCharts() {
+    if (monthlyChartInstance) monthlyChartInstance.destroy();
+    if (cumulativeChartInstance) cumulativeChartInstance.destroy();
+    if (donutChartInstance) donutChartInstance.destroy();
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#a0aec0' : '#4a5568';
+    const gridColor = isDark ? '#4a5568' : '#e2e8f0';
+    const tooltipBgColor = isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+    const tooltipTitleColor = isDark ? '#ffffff' : '#1f2937';
+    const tooltipBodyColor = isDark ? '#d1d5db' : '#4b5563';
     
+    Chart.defaults.color = textColor;
+    Chart.defaults.borderColor = gridColor;
+    
+    const tooltipConfig = {
+        backgroundColor: tooltipBgColor, titleColor: tooltipTitleColor, bodyColor: tooltipBodyColor,
+        titleFont: { weight: 'bold' }, padding: 12, cornerRadius: 8, displayColors: true, boxPadding: 4,
+        callbacks: { label: (c) => `${c.dataset.label || ''}: ${currencyFormatter.format(c.parsed.y || c.raw)}` }
+    };
+
+    const labels = monthlyDataGlobal.map(d => d.month);
+    const realData = monthlyDataGlobal.map(d => d.real);
+    const planData = monthlyDataGlobal.map(d => d.plan);
+    const cumulativeReal = realData.reduce((acc, val, i) => { acc.push((acc[i-1] || 0) + val); return acc; }, []);
+    const cumulativePlan = planData.reduce((acc, val, i) => { acc.push((acc[i-1] || 0) + val); return acc; }, []);
+
     monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
-        type: 'bar', data: { labels, datasets: [{ label: 'Real', data: realData, backgroundColor: 'rgba(45, 212, 191, 0.7)', borderColor: 'rgb(45, 212, 191)', borderWidth: 2, borderRadius: 4 }, { label: 'Plan', data: planData, backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: 'rgb(59, 130, 246)', borderWidth: 2, borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, tooltip: tooltipConfig }, scales: { y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v).replace('.00','') } } } }
+        type: 'bar', data: { labels, datasets: [{ label: 'Real', data: realData, backgroundColor: 'rgba(45, 212, 191, 0.8)', borderColor: 'rgb(45, 212, 191)', borderWidth: 2, borderRadius: 4 }, { label: 'Plan', data: planData, backgroundColor: 'rgba(59, 130, 246, 0.8)', borderColor: 'rgb(59, 130, 246)', borderWidth: 2, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, tooltip: tooltipConfig }, scales: { y: { beginAtZero: true, ticks: { callback: v => currencyFormatter.format(v).replace('.00','') } } } }
     });
+
     cumulativeChartInstance = new Chart(document.getElementById('cumulativeChart'), {
         type: 'line', data: { labels, datasets: [{ label: 'Acumulado Real', data: cumulativeReal, borderColor: 'rgb(45, 212, 191)', backgroundColor: 'rgba(45, 212, 191, 0.2)', fill: true, tension: 0.3 }, { label: 'Acumulado Plan', data: cumulativePlan, borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.2)', fill: true, tension: 0.3 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, tooltip: tooltipConfig }, scales: { y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v).replace('.00','') } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, tooltip: tooltipConfig }, scales: { y: { beginAtZero: true, ticks: { callback: v => currencyFormatter.format(v).replace('.00','') } } } }
     });
-    const remainingPlan = totalPlan > totalReal ? totalPlan - totalReal : 0;
+
+    const remainingPlan = kpiSummaryGlobal.totalPlan > kpiSummaryGlobal.totalReal ? kpiSummaryGlobal.totalPlan - kpiSummaryGlobal.totalReal : 0;
     donutChartInstance = new Chart(document.getElementById('complianceDonutChart'), {
-        type: 'doughnut', data: { labels: ['Alcanzado', 'Faltante'], datasets: [{ data: [totalReal, remainingPlan], backgroundColor: ['rgb(45, 212, 191)', 'rgb(75, 85, 99)'], borderColor: '#1f2937', borderWidth: 4, hoverOffset: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { ...tooltipConfig, callbacks: { label: c => `${c.label || ''}: ${formatCurrency(c.raw)} (${(totalPlan > 0 ? (c.raw / totalPlan) * 100 : 0).toFixed(2)}%)` } } } }
+        type: 'doughnut', data: { labels: ['Alcanzado', 'Faltante'], datasets: [{ data: [kpiSummaryGlobal.totalReal, remainingPlan], backgroundColor: [isDark ? 'rgb(45, 212, 191)' : 'rgb(13, 148, 136)', isDark ? 'rgb(75, 85, 99)' : 'rgb(209, 213, 219)'], borderColor: isDark ? '#1f2937' : '#ffffff', borderWidth: 4, hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { ...tooltipConfig, callbacks: { label: c => `${c.label || ''}: ${currencyFormatter.format(c.raw)} (${(kpiSummaryGlobal.totalPlan > 0 ? (c.raw / kpiSummaryGlobal.totalPlan) * 100 : 0).toFixed(2)}%)` } } } }
     });
 }
 </script>
