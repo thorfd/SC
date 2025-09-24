@@ -434,7 +434,7 @@ function renderCharts() {
 
     const remainingPlan = kpiSummaryGlobal.totalPlan > kpiSummaryGlobal.totalReal ? kpiSummaryGlobal.totalPlan - kpiSummaryGlobal.totalReal : 0;
     donutChartInstance = new Chart(document.getElementById('complianceDonutChart'), {
-        type: 'doughnut', data: { labels: ['Alcanzado', 'Faltante'], datasets: [{ data: [kpiSummaryGlobal.totalReal, remainingPlan], backgroundColor: [isDark ? 'rgb(45, 212, 191)' : 'rgb(13, 148, 136)', isD ark ? 'rgb(75, 85, 99)' : 'rgb(209, 213, 219)'], borderColor: isDark ? '#1f2937' : '#ffffff', borderWidth: 4, hoverOffset: 8 }] },
+        type: 'doughnut', data: { labels: ['Alcanzado', 'Faltante'], datasets: [{ data: [kpiSummaryGlobal.totalReal, remainingPlan], backgroundColor: [isDark ? 'rgb(45, 212, 191)' : 'rgb(13, 148, 136)', isDark ? 'rgb(75, 85, 99)' : 'rgb(209, 213, 219)'], borderColor: isDark ? '#1f2937' : '#ffffff', borderWidth: 4, hoverOffset: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { ...tooltipConfig, callbacks: { label: c => `${c.label || ''}: ${currencyFormatter.format(c.raw)} (${(kpiSummaryGlobal.totalPlan > 0 ? (c.raw / kpiSummaryGlobal.totalPlan) * 100 : 0).toFixed(2)}%)` } } } }
     });
 }
