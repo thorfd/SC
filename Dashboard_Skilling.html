@@ -264,8 +264,15 @@ async function loadDataAndInitializeDashboard() {
         const lastModified = response.headers.get('Last-Modified');
         if (lastModified) {
             const date = new Date(lastModified);
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('last-updated').textContent = `Actualizado: ${date.toLocaleDateString('es-MX', options)}`;
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true 
+            };
+            document.getElementById('last-updated').textContent = `Actualizado: ${date.toLocaleString('es-MX', options)}`;
         }
 
         const csvData = await response.text();
